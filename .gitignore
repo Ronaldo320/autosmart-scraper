@@ -1,0 +1,14 @@
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Sesiones y Cookies (¡CRÍTICO PARA TU SEGURIDAD!)
+sesion_ml_cookies/
+
+# Base de datos local (si tienes exportaciones)
+*.json
+*.csv
