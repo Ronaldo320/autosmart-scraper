@@ -432,6 +432,8 @@
   }
   .source-badge.tucarro { background: var(--tucarro); color: #000; }
   .source-badge.autocosmos { background: var(--autocosmos); color: #fff; }
+  .source-badge.usado { background: var(--accent); color: #000; }
+  .source-badge.nuevo { background: var(--autocosmos); color: #fff; }
 
   .select-checkbox {
     position: absolute;
@@ -690,8 +692,269 @@
     color: var(--text);
   }
 
+  /* ── NAV + BOTÓN CARRITO ── */
+  .header-right { display: flex; align-items: center; gap: 24px; }
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: color 0.15s;
+  }
+  .nav-link:hover { color: var(--accent); }
+  .cart-toggle {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .cart-toggle:hover { border-color: var(--accent); }
+  .cart-count {
+    background: var(--accent);
+    color: #000;
+    min-width: 22px; height: 22px;
+    border-radius: 11px;
+    font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+  }
+  .cart-count.bump { animation: bump 0.35s ease; }
+  @keyframes bump { 50% { transform: scale(1.35); } }
+
+  /* ── BOTÓN AGREGAR ── */
+  .btn-cart {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-cart:hover:not(:disabled) { background: var(--accent); color: #000; }
+  .btn-cart.in-cart { background: var(--accent); color: #000; }
+  .btn-cart:disabled { border-color: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  .sold-ribbon {
+    position: absolute;
+    top: 70px; left: 0; right: 0;
+    text-align: center;
+    background: rgba(255,51,102,0.92);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 3px;
+    padding: 6px 0;
+    pointer-events: none;
+  }
+  .car-card.sold .card-image { filter: grayscale(0.9) brightness(0.6); }
+  .car-card.sold .card-price { color: var(--muted); text-decoration: line-through; }
+
+  /* ── DRAWER DEL CARRITO ── */
+  .drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    z-index: 300;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .drawer-overlay.visible { opacity: 1; pointer-events: auto; }
+  .cart-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(440px, 100vw);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 301;
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .cart-drawer.visible { transform: translateX(0); }
+  .drawer-header {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px 24px; }
+  .drawer-footer { padding: 20px 24px; border-top: 1px solid var(--border); }
+
+  .cart-item {
+    display: flex; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cart-item img, .cart-item .ph {
+    width: 84px; height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--surface2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cart-item-meta { font-size: 12px; color: var(--muted); margin: 2px 0 4px; }
+  .cart-item-price { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
+  .cart-item.unavailable .cart-item-price { color: var(--red); font-size: 14px; }
+  .cart-remove {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 18px; align-self: flex-start;
+    padding: 2px 6px; border-radius: 6px;
+  }
+  .cart-remove:hover { color: var(--red); background: var(--surface2); }
+  .cart-empty { text-align: center; color: var(--muted); padding: 60px 0; }
+  .cart-empty div { font-size: 44px; margin-bottom: 8px; }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .total-row .label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .total-row .value { font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 800; }
+  .btn-block { width: 100%; padding: 14px; font-size: 16px; }
+  .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+  .link-btn {
+    background: none; border: none; color: var(--muted);
+    font-family: 'Barlow', sans-serif; font-size: 13px;
+    cursor: pointer; margin-top: 10px; width: 100%;
+  }
+  .link-btn:hover { color: var(--red); }
+
+  /* ── CHECKOUT ── */
+  .modal.small { max-width: 560px; }
+  .checkout-body { padding: 24px 28px; }
+  .checkout-summary {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .checkout-summary .line { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+  .checkout-summary .line span:first-child { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .checkout-summary .line.total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 700; }
+  .checkout-summary .line.total span:last-child { color: var(--accent); font-family: 'Barlow Condensed', sans-serif; font-size: 22px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .field label {
+    display: block;
+    font-size: 11px; font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 13px;
+    border-radius: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field.error input { border-color: var(--red); }
+  .field .err { color: var(--red); font-size: 12px; margin-top: 4px; min-height: 0; }
+
+  .pay-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pay-option input { display: none; }
+  .pay-option span {
+    display: block;
+    text-align: center;
+    padding: 12px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .pay-option span b { display: block; font-size: 20px; margin-bottom: 2px; }
+  .pay-option input:checked + span { border-color: var(--accent); background: rgba(232,255,71,0.08); color: var(--accent); }
+  .sim-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .terms { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); margin: 16px 0 18px; }
+  .terms input { margin-top: 3px; accent-color: var(--accent); }
+  .form-error { color: var(--red); font-size: 13px; margin-bottom: 12px; display: none; }
+  .form-error.visible { display: block; }
+
+  .processing {
+    display: none;
+    flex-direction: column; align-items: center; gap: 16px;
+    padding: 50px 0;
+  }
+  .processing.visible { display: flex; }
+
+  /* ── ÉXITO ── */
+  .success-body { padding: 36px 28px 28px; text-align: center; }
+  .success-check {
+    width: 76px; height: 76px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; font-weight: 800;
+    animation: pop 0.45s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  .success-body h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 800; margin-bottom: 6px; }
+  .success-body p { color: var(--muted); margin-bottom: 20px; }
+  .receipt { text-align: left; background: var(--surface2); border-radius: 10px; padding: 16px 18px; font-size: 14px; margin-bottom: 22px; }
+  .receipt .line { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+  .receipt .line span:first-child { color: var(--muted); }
+  .receipt .line span:last-child { text-align: right; }
+  .receipt hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+  .success-actions { display: flex; gap: 10px; }
+  .success-actions > * { flex: 1; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translate(-50%, 120px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 500;
+    transition: transform 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .toast.visible { transform: translate(-50%, 0); }
+  .toast.error { border-left-color: var(--red); }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .pay-methods { grid-template-columns: 1fr; }
+    .nav-link { display: none; }
     header { padding: 16px 20px; }
     .hero { padding: 48px 20px 40px; }
     .filters-bar, .stats-bar, .results-section, .vip-panel { padding: 16px 20px; }
@@ -707,15 +970,22 @@
     AUTO<span>SMART</span>
     <span class="logo-badge">PRO</span>
   </div>
-  <div class="sources-indicator">
-    <div class="source-dot">TuCarro</div>
-    <div class="source-dot autocosmos">Autocosmos</div>
+  <div class="header-right">
+    <div class="sources-indicator">
+      <div class="source-dot autocosmos">Autocosmos + CarroYa · Nuevos y usados</div>
+    </div>
+    <a class="nav-link" href="/dashboard">DASHBOARD</a>
+    <a class="nav-link" href="/reportes">REPORTES</a>
+    <a class="nav-link" href="/admin">ADMIN</a>
+    <button class="cart-toggle" onclick="openCart()" aria-label="Abrir carrito">
+      🛒 CARRITO <span class="cart-count" id="cartCount">0</span>
+    </button>
   </div>
 </header>
 
 <section class="hero">
   <h1>Encuentra tu<span class="highlight">vehículo ideal</span></h1>
-  <p>Comparamos TuCarro y Autocosmos Colombia para que pagues el mejor precio.</p>
+  <p>Más de 1.000 carros nuevos y usados en Colombia. Compara, elige y compra en línea.</p>
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Ej: Toyota Hilux 4x4, Chevrolet Spark..." autocomplete="off">
     <button onclick="doSearch()">BUSCAR →</button>
@@ -735,11 +1005,11 @@
     <option value="year_desc">Año más reciente</option>
     <option value="mileage">Menor kilometraje</option>
   </select>
-  <span class="filter-label" style="margin-left:16px">Fuente:</span>
-  <select class="filter-select" id="sourceFilter" onchange="applyFilter()">
-    <option value="all">Todas</option>
-    <option value="tucarro">TuCarro</option>
-    <option value="autocosmos">Autocosmos</option>
+  <span class="filter-label" style="margin-left:16px">Estado:</span>
+  <select class="filter-select" id="conditionFilter" onchange="applySort()">
+    <option value="all">Nuevos y usados</option>
+    <option value="nuevo">Solo nuevos</option>
+    <option value="usado">Solo usados</option>
   </select>
   <button class="compare-btn" id="compareBtn" onclick="openCompare()">
     COMPARAR (<span id="compareCount">0</span>)
@@ -773,11 +1043,8 @@
 
 <div class="loading" id="loading">
   <div class="spinner"></div>
-  <div class="loading-text">Scrapeando datos en tiempo real...</div>
+  <div class="loading-text">Cargando autos usados...</div>
   <div class="loading-sources">
-    <div class="loading-source active" id="loadTucarro">
-      <div class="dot"></div> TuCarro
-    </div>
     <div class="loading-source active" id="loadAutocosmos">
       <div class="dot"></div> Autocosmos
     </div>
@@ -790,7 +1057,7 @@
 
 <div class="empty-state" id="emptyState">
   <h3>Sin resultados</h3>
-  <p>Intenta con otra búsqueda o verifica la conexión.</p>
+  <p id="emptyMsg">Intenta con otra búsqueda o verifica la conexión.</p>
 </div>
 
 <div class="modal-overlay" id="compareModal">
@@ -803,15 +1070,123 @@
   </div>
 </div>
 
+<!-- ── CARRITO ── -->
+<div class="drawer-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-label="Carrito de compras">
+  <div class="drawer-header">
+    <div class="modal-title">Tu carrito</div>
+    <button class="modal-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-footer">
+    <div class="total-row">
+      <span class="label">Total</span>
+      <span class="value" id="cartTotal">$ 0</span>
+    </div>
+    <button class="btn-primary btn-block" id="checkoutBtn" onclick="openCheckout()" disabled>FINALIZAR COMPRA →</button>
+    <button class="link-btn" id="clearCartBtn" onclick="clearCart()">Vaciar carrito</button>
+  </div>
+</aside>
+
+<!-- ── CHECKOUT ── -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal small">
+    <div class="modal-header">
+      <div class="modal-title">Finalizar compra</div>
+      <button class="modal-close" id="checkoutClose" onclick="closeCheckout()">✕</button>
+    </div>
+    <div class="checkout-body">
+      <form id="checkoutForm" novalidate>
+        <div class="checkout-summary" id="checkoutSummary"></div>
+        <div class="form-grid">
+          <div class="field full" data-field="nombre">
+            <label for="f_nombre">Nombre completo</label>
+            <input id="f_nombre" name="nombre" autocomplete="name" placeholder="Ej: Ana María Pérez">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="documento">
+            <label for="f_documento">Cédula / NIT</label>
+            <input id="f_documento" name="documento" inputmode="numeric" placeholder="1234567890">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="telefono">
+            <label for="f_telefono">Celular</label>
+            <input id="f_telefono" name="telefono" inputmode="tel" autocomplete="tel" placeholder="300 123 4567">
+            <div class="err"></div>
+          </div>
+          <div class="field full" data-field="email">
+            <label for="f_email">Correo</label>
+            <input id="f_email" name="email" type="email" autocomplete="email" placeholder="correo@ejemplo.com">
+            <div class="err"></div>
+          </div>
+          <div class="field full" data-field="direccion">
+            <label for="f_direccion">Dirección de entrega</label>
+            <input id="f_direccion" name="direccion" autocomplete="street-address" placeholder="Calle 72 # 54-35, apto 301">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="ciudad">
+            <label for="f_ciudad">Ciudad</label>
+            <input id="f_ciudad" name="ciudad" autocomplete="address-level2" placeholder="Barranquilla">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-field="departamento">
+            <label for="f_departamento">Departamento</label>
+            <input id="f_departamento" name="departamento" autocomplete="address-level1" placeholder="Atlántico">
+            <div class="err"></div>
+          </div>
+          <div class="field full" data-field="metodo_pago">
+            <label>Método de pago</label>
+            <div class="pay-methods">
+              <label class="pay-option"><input type="radio" name="metodo_pago" value="tarjeta" checked><span><b>💳</b>Tarjeta</span></label>
+              <label class="pay-option"><input type="radio" name="metodo_pago" value="pse"><span><b>🏦</b>PSE</span></label>
+              <label class="pay-option"><input type="radio" name="metodo_pago" value="transferencia"><span><b>🔁</b>Transferencia</span></label>
+            </div>
+            <div class="sim-note">Pasarela en modo simulado: no se hace ningún cobro real ni se piden datos de tarjeta.</div>
+            <div class="err"></div>
+          </div>
+        </div>
+        <label class="terms"><input type="checkbox" id="f_terms"> Acepto los términos de la compra y el tratamiento de mis datos personales.</label>
+        <div class="form-error" id="formError"></div>
+        <button type="submit" class="btn-primary btn-block" id="payBtn">PAGAR</button>
+      </form>
+      <div class="processing" id="processing">
+        <div class="spinner"></div>
+        <div class="loading-text">Procesando pago seguro...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPRA EXITOSA ── -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal small">
+    <div class="success-body">
+      <div class="success-check">✓</div>
+      <h2>¡Compra exitosa!</h2>
+      <p id="successMsg"></p>
+      <div class="receipt" id="receipt"></div>
+      <div class="success-actions">
+        <button class="btn-secondary" onclick="closeSuccess()">Seguir comprando</button>
+        <a class="btn-primary" href="/dashboard" style="padding:10px">VER DASHBOARD →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
   // ── Estado ──────────────────────────────────────────────────────────────────
   let allVehicles = [];
   let filteredVehicles = [];
   let selectedIds = new Set();
-  const API_URL = "http://localhost:5000/api/vehicles";
+  // Rutas relativas: el carrito vive en la cookie de sesión de Flask,
+  // así que las peticiones deben ir al mismo origen que sirve la página.
+  const API_URL = "/api/vehicles";
+  let cart = { items: [], count: 0, total: 0, total_text: "$ 0" };
 
   // ── Inicialización (Carga Inmediata) ────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', loadAllData);
+  window.addEventListener('DOMContentLoaded', () => { loadAllData(); loadCart(); });
 
   async function loadAllData() {
     showLoading(true);
@@ -822,18 +1197,25 @@
       allVehicles = data.vehicles || [];
       filteredVehicles = [...allVehicles];
 
-      renderStats(data.stats || computeStats(allVehicles));
+      window.statsGlobales = data.stats || computeStats(allVehicles);
+      renderStats(window.statsGlobales);
       renderGrid(filteredVehicles);
 
       showLoading(false);
       showResults(allVehicles.length > 0);
       
       if (allVehicles.length === 0) {
+          // La base está vacía: el scraper probablemente está trabajando. Reintentar en 15 s.
+          document.getElementById("emptyMsg").textContent =
+            "El scraper está llenando la base de datos. Esta página se actualiza sola cada 15 segundos.";
+          setTimeout(loadAllData, 15000);
           document.getElementById("emptyState").classList.add("visible");
       } else {
           document.getElementById("emptyState").classList.remove("visible");
           document.getElementById("filtersBar").classList.add("visible");
           document.getElementById("statsBar").classList.add("visible");
+          // Si había una búsqueda activa (p. ej. al recargar tras una compra), se mantiene
+          if (document.getElementById("searchInput").value.trim()) doSearch();
       }
     } catch (err) {
       console.error("Error conectando con la DB:", err);
@@ -863,6 +1245,7 @@
 
     // Aplica el ordenamiento y dibuja las tarjetas
     applySort();
+    renderStats(q ? computeStats(filteredVehicles) : (window.statsGlobales || computeStats(allVehicles)));
     
     // LÓGICA VIP (Comparativa Automática)
     if (q.length > 2 && filteredVehicles.length > 1) {
@@ -884,6 +1267,7 @@
       const container = document.getElementById('vipCards');
 
       // Limpiamos la data de letras, puntos y "N/A"
+      list = list.filter(v => v.estado !== "vendido");   // solo se destacan autos que se pueden comprar
       const conPrecio = list.filter(v => v.price > 0);
       const conAnio = list.filter(v => parseInt(v.year) > 1900);
       const conKm = list.filter(v => {
@@ -920,14 +1304,14 @@
 
       ganadores.forEach(ganador => {
           if (ganador.data) {
-              const sourceTag = ganador.data.source === "tucarro" ? "TuCarro" : "Autocosmos";
-              const tagColor = ganador.data.source === "tucarro" ? "color: var(--tucarro)" : "color: var(--autocosmos)";
+              const sourceTag = condLabel(ganador.data);
+              const tagColor = condOf(ganador.data) === "nuevo" ? "color: var(--autocosmos)" : "color: var(--accent)";
               
               container.innerHTML += `
                   <div class="vip-card ${ganador.colorClass}">
                       <div class="vip-card-badge">${ganador.titulo}</div>
                       <h4 title="${ganador.data.title}">${ganador.data.title}</h4>
-                      <div class="price">${ganador.data.price_text}</div>
+                      <div class="price">${ganador.data.price > 0 ? fmtCOP(ganador.data.price) : ganador.data.price_text}</div>
                       <div class="specs">
                           <span>Año: ${ganador.data.year}</span>
                           <span>Km: ${ganador.data.mileage}</span>
@@ -936,12 +1320,14 @@
                           <span style="font-size:12px; font-weight:700; text-transform:uppercase; ${tagColor}">
                               ${sourceTag}
                           </span>
-                          <a href="${ganador.data.url}" target="_blank">Ver anuncio →</a>
+                          <a href="/vehiculo/${ganador.data._id}">Ver detalle →</a>
                       </div>
+                      ${cartButtonHTML(ganador.data)}
                   </div>
               `;
           }
       });
+      refreshCartButtons();
   }
 
   function computeStats(vehicles) {
@@ -971,28 +1357,30 @@
       const card = createCard(v, i);
       grid.appendChild(card);
     });
+    refreshCartButtons();
   }
 
   function createCard(v, idx) {
     const card = document.createElement("div");
-    card.className = "car-card";
+    card.className = "car-card" + (v.estado === "vendido" ? " sold" : "");
     card.style.animationDelay = `${(idx % 15) * 0.02}s`; 
     card.dataset.id = v._id || v.id;
 
     const carEmoji = v.fuel === "Eléctrico" ? "⚡" : "🚗";
 
     card.innerHTML = `
-      <span class="source-badge ${v.source}">${v.source === "tucarro" ? "TuCarro" : "Autocosmos"}</span>
+      <span class="source-badge ${condOf(v)}">${condLabel(v)}</span>
       <div class="select-checkbox" onclick="toggleSelect(event, '${v._id || v.id}')">✓</div>
       ${v.image
-        ? `<img class="card-image" src="${v.image}" alt="${v.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        ? `<img class="card-image" loading="lazy" referrerpolicy="no-referrer" src="${esc(v.image)}" alt="${esc(v.title)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
         : ''
       }
       <div class="card-image-placeholder" ${v.image ? 'style="display:none"' : ''}>${carEmoji}</div>
+      ${v.estado === "vendido" ? '<div class="sold-ribbon">VENDIDO</div>' : ''}
       <div class="card-body">
-        <div class="card-title" title="${v.title}">${v.title}</div>
-        <div class="card-location">📍 ${v.location || 'Colombia'}</div>
-        <div class="card-price ${v.price ? '' : 'no-price'}">${v.price_text || 'Consultar precio'}</div>
+        <a class="card-title" href="/vehiculo/${v._id || v.id}" title="${esc(v.title)}" style="display:block;color:inherit;text-decoration:none">${esc(v.title)}</a>
+        <div class="card-location">📍 ${esc(v.location || 'Colombia')} · ${sourceName(v)}</div>
+        <div class="card-price ${v.price ? '' : 'no-price'}">${v.price > 0 ? fmtCOP(v.price) : 'Consultar precio'}</div>
         <div class="card-specs">
           <div class="spec-item">
             <div class="spec-key">Año</div>
@@ -1012,13 +1400,224 @@
           </div>
         </div>
         <div class="card-actions">
-          <a class="btn-primary" href="${v.url || '#'}" target="_blank">Ver anuncio →</a>
+          <a class="btn-primary" href="/vehiculo/${v._id || v.id}">Ver detalle →</a>
           <button class="btn-secondary" onclick="toggleSelect(event, '${v._id || v.id}')">Comparar</button>
         </div>
+        ${cartButtonHTML(v)}
       </div>
     `;
     return card;
   }
+
+  // ── Carrito ─────────────────────────────────────────────────────────────────
+  const sourceName = v => ({ carroya: "CarroYa", autocosmos: "Autocosmos" }[v.source] || v.source || "");
+  const condOf = v => (v.condition === "nuevo" ? "nuevo" : "usado");
+  const condLabel = v => (condOf(v) === "nuevo" ? "Nuevo" : "Usado");
+  const fmtCOP = n => "$ " + Number(n || 0).toLocaleString("es-CO");
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const inCart = id => cart.items.some(it => it.id === id);
+
+  function cartButtonHTML(v) {
+    const id = v._id || v.id;
+    return `<button class="btn-cart" data-cart-id="${id}" data-sold="${v.estado === "vendido" ? 1 : 0}"
+              data-noprice="${v.price > 0 ? 0 : 1}" onclick="addToCart(event, '${id}')"></button>`;
+  }
+
+  // Ajusta el texto/estado de todos los botones "Agregar" según el carrito
+  function refreshCartButtons() {
+    document.querySelectorAll(".btn-cart").forEach(btn => {
+      const id = btn.dataset.cartId;
+      btn.classList.remove("in-cart");
+      btn.disabled = false;
+      if (btn.dataset.sold === "1") { btn.textContent = "VENDIDO"; btn.disabled = true; }
+      else if (btn.dataset.noprice === "1") { btn.textContent = "SIN PRECIO PUBLICADO"; btn.disabled = true; }
+      else if (inCart(id)) { btn.textContent = "✓ EN EL CARRITO"; btn.classList.add("in-cart"); }
+      else { btn.textContent = "🛒 AGREGAR AL CARRITO"; }
+    });
+  }
+
+  async function api(url, options = {}) {
+    const resp = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      ...options,
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw Object.assign(new Error(data.error || "Error de conexión"), { data, status: resp.status });
+    return data;
+  }
+
+  async function loadCart() {
+    try { setCart(await api("/api/cart")); } catch (e) { console.error(e); }
+  }
+
+  function setCart(newCart, bump = false) {
+    cart = newCart;
+    const badge = document.getElementById("cartCount");
+    badge.textContent = cart.count;
+    if (bump) { badge.classList.remove("bump"); void badge.offsetWidth; badge.classList.add("bump"); }
+    renderCart();
+    refreshCartButtons();
+  }
+
+  async function addToCart(e, id) {
+    e.stopPropagation();
+    if (inCart(id)) { openCart(); return; }
+    try {
+      const data = await api("/api/cart", { method: "POST", body: JSON.stringify({ vehicle_id: id }) });
+      setCart(data.carrito, true);
+      showToast(data.mensaje || "Agregado al carrito");
+    } catch (err) {
+      showToast(err.message, true);
+      if (err.status === 409) loadAllData(); // ya lo vendieron: refrescar catálogo
+    }
+  }
+
+  async function removeFromCart(id) {
+    try { setCart((await api(`/api/cart/${id}`, { method: "DELETE" })).carrito); }
+    catch (err) { showToast(err.message, true); }
+  }
+
+  async function clearCart() {
+    if (!cart.count) return;
+    try { setCart((await api("/api/cart", { method: "DELETE" })).carrito); }
+    catch (err) { showToast(err.message, true); }
+  }
+
+  function renderCart() {
+    const body = document.getElementById("cartBody");
+    document.getElementById("cartTotal").textContent = cart.total_text || fmtCOP(cart.total);
+    const hasUnavailable = cart.items.some(it => !it.disponible);
+    document.getElementById("checkoutBtn").disabled = !cart.items.length || hasUnavailable;
+    document.getElementById("clearCartBtn").style.display = cart.items.length ? "block" : "none";
+
+    if (!cart.items.length) {
+      body.innerHTML = `<div class="cart-empty"><div>🛒</div>Tu carrito está vacío.<br>Agrega un vehículo del catálogo.</div>`;
+      return;
+    }
+    body.innerHTML = cart.items.map(it => `
+      <div class="cart-item ${it.disponible ? "" : "unavailable"}">
+        ${it.image ? `<img src="${esc(it.image)}" alt="" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=&quot;ph&quot;>🚗</div>'">` : `<div class="ph">🚗</div>`}
+        <div class="cart-item-info">
+          <div class="cart-item-title" title="${esc(it.title)}">${esc(it.title)}</div>
+          <div class="cart-item-meta">${esc(it.year)} · ${esc(it.mileage)} · ${condLabel(it)}</div>
+          <div class="cart-item-price">${it.disponible ? esc(it.price_text) : "Ya no está disponible — quítalo para continuar"}</div>
+        </div>
+        <button class="cart-remove" title="Quitar" onclick="removeFromCart('${it.id}')">✕</button>
+      </div>`).join("");
+  }
+
+  function openCart() {
+    document.getElementById("cartOverlay").classList.add("visible");
+    document.getElementById("cartDrawer").classList.add("visible");
+  }
+  function closeCart() {
+    document.getElementById("cartOverlay").classList.remove("visible");
+    document.getElementById("cartDrawer").classList.remove("visible");
+  }
+
+  // ── Checkout ────────────────────────────────────────────────────────────────
+  function openCheckout() {
+    if (!cart.items.length) return;
+    closeCart();
+    document.getElementById("checkoutSummary").innerHTML =
+      cart.items.map(it => `<div class="line"><span>${esc(it.title)}</span><span>${esc(it.price_text)}</span></div>`).join("") +
+      `<div class="line total"><span>Total a pagar</span><span>${esc(cart.total_text)}</span></div>`;
+    document.getElementById("payBtn").textContent = `PAGAR ${cart.total_text}`;
+    clearFormErrors();
+    document.getElementById("checkoutForm").style.display = "block";
+    document.getElementById("processing").classList.remove("visible");
+    document.getElementById("checkoutModal").classList.add("visible");
+    setTimeout(() => document.getElementById("f_nombre").focus(), 50);
+  }
+  function closeCheckout() {
+    document.getElementById("checkoutModal").classList.remove("visible");
+  }
+
+  function clearFormErrors() {
+    document.querySelectorAll("#checkoutForm .field").forEach(f => {
+      f.classList.remove("error");
+      f.querySelector(".err").textContent = "";
+    });
+    document.getElementById("formError").classList.remove("visible");
+  }
+  function showFormError(msg, campos = {}) {
+    Object.entries(campos).forEach(([name, text]) => {
+      const f = document.querySelector(`#checkoutForm .field[data-field="${name}"]`);
+      if (f) { f.classList.add("error"); f.querySelector(".err").textContent = text; }
+    });
+    const box = document.getElementById("formError");
+    box.textContent = msg;
+    box.classList.add("visible");
+  }
+
+  document.getElementById("checkoutForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearFormErrors();
+    const form = e.target;
+    if (!document.getElementById("f_terms").checked) {
+      showFormError("Debes aceptar los términos para continuar.");
+      return;
+    }
+    const payload = Object.fromEntries(new FormData(form).entries());
+
+    // Pantalla de "procesando" (pago simulado)
+    form.style.display = "none";
+    document.getElementById("processing").classList.add("visible");
+    document.getElementById("checkoutClose").disabled = true;
+
+    try {
+      const [data] = await Promise.all([
+        api("/api/checkout", { method: "POST", body: JSON.stringify(payload) }),
+        new Promise(r => setTimeout(r, 1800)),
+      ]);
+      closeCheckout();
+      form.reset();
+      showSuccess(data.orden);
+      loadCart();
+      loadAllData(); // los carros comprados ahora aparecen como VENDIDO
+    } catch (err) {
+      form.style.display = "block";
+      document.getElementById("processing").classList.remove("visible");
+      showFormError(err.message, (err.data && err.data.campos) || {});
+      if (err.status === 409) { loadCart(); loadAllData(); }
+    } finally {
+      document.getElementById("checkoutClose").disabled = false;
+    }
+  });
+
+  function showSuccess(o) {
+    document.getElementById("successMsg").textContent =
+      `Gracias, ${o.cliente.nombre.split(" ")[0]}. Enviamos la confirmación a ${o.cliente.email}.`;
+    document.getElementById("receipt").innerHTML = `
+      <div class="line"><span>N.º de orden</span><span><b>${esc(o.numero_orden)}</b></span></div>
+      <div class="line"><span>Referencia de pago</span><span>${esc(o.referencia_pago)}</span></div>
+      <div class="line"><span>Fecha</span><span>${esc(o.fecha)}</span></div>
+      <div class="line"><span>Método</span><span>${esc(o.metodo_pago_texto)}</span></div>
+      <div class="line"><span>Entrega</span><span>${esc(o.direccion_entrega.direccion)}, ${esc(o.direccion_entrega.ciudad)}</span></div>
+      <hr>
+      ${o.items.map(it => `<div class="line"><span>${esc(it.title)}</span><span>${esc(it.price_text)}</span></div>`).join("")}
+      <hr>
+      <div class="line"><span><b>Total pagado</b></span><span style="color:var(--accent);font-weight:800">${esc(o.total_text)}</span></div>`;
+    document.getElementById("successModal").classList.add("visible");
+  }
+  function closeSuccess() {
+    document.getElementById("successModal").classList.remove("visible");
+  }
+
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.toggle("error", isError);
+    t.classList.add("visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("visible"), 2600);
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") { closeCart(); closeCompare(); closeSuccess(); }
+  });
 
   // ── Selección y Comparación ──────────────────────────────────────────────────
   function toggleSelect(e, id) {
@@ -1064,7 +1663,8 @@
     html += `</tr></thead><tbody>`;
 
     const rows = [
-      ["Fuente", v => v.source === "tucarro" ? "TuCarro" : "Autocosmos", null],
+      ["Estado", v => condLabel(v), null],
+      ["Fuente", v => sourceName(v), null],
       ["Precio", v => v.price_text || "N/A", (v) => v.price === minPrice ? "best" : ""],
       ["Año", v => v.year, (v) => parseInt(v.year) === maxYear ? "best" : ""],
       ["Kilometraje", v => v.mileage, (v, i) => minKm[i] === minKmVal ? "best" : ""],
@@ -1095,9 +1695,9 @@
   // ── Filtros y orden ──────────────────────────────────────────────────────────
   function applySort() {
     const sort = document.getElementById("sortSelect").value;
-    const source = document.getElementById("sourceFilter").value;
+    const cond = document.getElementById("conditionFilter").value;
     
-    let list = source === "all" ? [...filteredVehicles] : filteredVehicles.filter(v => v.source === source);
+    let list = cond === "all" ? [...filteredVehicles] : filteredVehicles.filter(v => condOf(v) === cond);
 
     if (sort === "price") list.sort((a,b) => (a.price||Infinity) - (b.price||Infinity));
     else if (sort === "year_desc") list.sort((a,b) => (parseInt(b.year)||0) - (parseInt(a.year)||0));

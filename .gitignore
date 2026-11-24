@@ -1,3 +1,6 @@
+# Credenciales (¡nunca al repositorio!)
+.env
+
 # Entornos virtuales
 venv/
 env/
@@ -12,3 +15,11 @@ sesion_ml_cookies/
 # Base de datos local (si tienes exportaciones)
 *.json
 *.csv
+# Páginas guardadas para diagnosticar el scraper
+debug_*.html
+
+# Entorno virtual creado en la ra�z
+Lib/
+Scripts/
+Include/
+pyvenv.cfg

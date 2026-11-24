@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración — Auto Smart</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f; --surface: #12151a; --surface2: #1a1e26; --border: #232830;
+    --accent: #e8ff47; --accent2: #ff3366; --red: #ff4747; --good: #2fd27a;
+    --text: #f0f2f5; --text2: #b8bec8; --muted: #6b7280;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+  header { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between;
+           border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,12,15,.95);
+           backdrop-filter: blur(12px); z-index: 100; }
+  .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); text-decoration: none; }
+  .logo span { color: var(--accent); }
+  .nav { display: flex; gap: 22px; }
+  .nav a { color: var(--muted); text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: .5px; }
+  .nav a:hover, .nav a.active { color: var(--accent); }
+  main { padding: 28px 40px 60px; max-width: 1400px; margin: 0 auto; }
+  h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 40px; font-weight: 800; }
+  .sub { color: var(--muted); font-size: 14px; margin: 4px 0 22px; }
+
+  .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .tab { background: none; border: none; color: var(--muted); padding: 12px 18px; font-family: 'Barlow Condensed', sans-serif;
+         font-size: 18px; font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab .n { font-size: 13px; color: var(--muted); margin-left: 4px; }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 8px; font-family: 'Barlow', sans-serif; font-size: 14px; outline: none; }
+  input:focus, select:focus { border-color: var(--accent); }
+  .toolbar input[type=search] { min-width: 260px; flex: 1; max-width: 380px; }
+  .btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 14px;
+         border-radius: 8px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; }
+  .btn.danger { color: var(--red); }
+  .btn.danger:hover { border-color: var(--red); }
+  .btn.sm { padding: 5px 10px; font-size: 12px; }
+  .spacer { flex: 1; }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px;
+       font-weight: 600; padding: 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td strong { color: var(--text); }
+  .thumb { width: 64px; height: 44px; object-fit: cover; border-radius: 6px; background: var(--surface2); display: block; }
+  .acciones { display: flex; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  .pill.ok { background: rgba(47,210,122,.12); color: var(--good); }
+  .pill.no { background: rgba(255,71,71,.12); color: var(--red); }
+  .pill.neutral { background: var(--surface2); color: var(--text2); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border);
+          border-radius: 20px; padding: 3px 4px 3px 10px; font-size: 12px; margin: 2px; color: var(--text2); }
+  .chip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0 5px; border-radius: 10px; }
+  .chip button:hover { color: var(--red); }
+  .chip.solo { padding-right: 10px; }
+
+  .paginacion { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 12px; color: var(--muted); font-size: 13px; }
+  .vacio { padding: 40px; text-align: center; color: var(--muted); }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 200; padding: 30px 16px; overflow-y: auto; }
+  .overlay.visible { display: flex; justify-content: center; align-items: flex-start; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 720px; }
+  .modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-head h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; }
+  .modal-body { padding: 20px 22px; }
+  .modal-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .full { grid-column: 1 / -1; }
+  .field label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; font-weight: 600; margin-bottom: 6px; }
+  .field input, .field select { width: 100%; }
+  .field .err { color: var(--red); font-size: 12px; margin-top: 4px; }
+  .field.error input, .field.error select { border-color: var(--red); }
+  .grupo { border: 1px dashed var(--border); border-radius: 10px; padding: 12px; }
+  .grupo-t { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; }
+  .form-error { color: var(--red); font-size: 13px; margin-bottom: 12px; display: none; }
+  .form-error.visible { display: block; }
+  dl.datos { display: grid; grid-template-columns: 150px 1fr; gap: 8px 14px; font-size: 14px; }
+  dl.datos dt { color: var(--muted); }
+  dl.datos dd { color: var(--text); word-break: break-word; }
+  .seccion { margin-top: 20px; }
+  .seccion h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; margin-bottom: 8px; }
+  .seccion .nota { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .detalle-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 10px; margin-bottom: 16px; background: var(--surface2); }
+  .fila-add { display: flex; gap: 8px; margin-top: 8px; }
+  .fila-add input { flex: 1; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 120px); background: var(--surface2);
+           border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: 10px;
+           font-size: 14px; z-index: 500; transition: transform .3s; max-width: 90vw; }
+  .toast.visible { transform: translate(-50%, 0); }
+  .toast.error { border-left-color: var(--red); }
+  @media (max-width: 760px) { header, main { padding-left: 16px; padding-right: 16px; } .grid2 { grid-template-columns: 1fr; } .nav { gap: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">AUTO<span>SMART</span></a>
+  <nav class="nav">
+    <a href="/">CATÁLOGO</a><a href="/dashboard">DASHBOARD</a><a href="/reportes">REPORTES</a><a href="/admin" class="active">ADMIN</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Administración</h1>
+  <p class="sub">Crear, consultar, editar y eliminar los documentos de las colecciones de MongoDB.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="vehiculos">Vehículos <span class="n" id="n-vehiculos"></span></button>
+    <button class="tab" data-tab="clientes">Clientes <span class="n" id="n-clientes"></span></button>
+    <button class="tab" data-tab="ordenes">Órdenes <span class="n" id="n-ordenes"></span></button>
+  </div>
+
+  <div class="toolbar" id="toolbar"></div>
+  <div class="table-wrap" id="tabla"></div>
+  <div class="paginacion" id="paginacion"></div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head"><h2 id="m-titulo"></h2><button class="btn sm" onclick="cerrarModal()">✕</button></div>
+    <div class="modal-body" id="m-cuerpo"></div>
+    <div class="modal-foot" id="m-pie"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cop = n => "$ " + Number(n || 0).toLocaleString("es-CO");
+const $ = id => document.getElementById(id);
+const estado = { tab: "vehiculos", pagina: 1, filtros: {}, marcas: [] };
+
+async function api(url, opciones = {}) {
+  const r = await fetch(url, { headers: { "Content-Type": "application/json" }, ...opciones });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.error || "Error de conexión"), { data });
+  return data;
+}
+let tt;
+function toast(msg, err = false) {
+  const t = $("toast"); t.textContent = msg; t.classList.toggle("error", err); t.classList.add("visible");
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove("visible"), 3500);
+}
+function abrirModal(titulo, cuerpo, pie = "") { $("m-titulo").textContent = titulo; $("m-cuerpo").innerHTML = cuerpo; $("m-pie").innerHTML = pie; $("overlay").classList.add("visible"); }
+function cerrarModal() { $("overlay").classList.remove("visible"); }
+$("overlay").addEventListener("click", e => { if (e.target.id === "overlay") cerrarModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarModal(); });
+
+// ---------- formularios genéricos ----------
+function campo(nombre, etiqueta, valor = "", tipo = "text", extra = "") {
+  return `<div class="field ${extra}" data-campo="${nombre}"><label>${etiqueta}</label>
+    <input name="${nombre}" type="${tipo}" value="${esc(valor)}"><div class="err"></div></div>`;
+}
+function selector(nombre, etiqueta, opciones, valor, extra = "") {
+  return `<div class="field ${extra}" data-campo="${nombre}"><label>${etiqueta}</label><select name="${nombre}">
+    ${opciones.map(([v, t]) => `<option value="${v}" ${v === valor ? "selected" : ""}>${t}</option>`).join("")}
+    </select><div class="err"></div></div>`;
+}
+function leerForm() {
+  const d = {}; $("m-cuerpo").querySelectorAll("input[name], select[name]").forEach(i => d[i.name] = i.value); return d;
+}
+function mostrarErrores(err) {
+  $("m-cuerpo").querySelectorAll(".field").forEach(f => { f.classList.remove("error"); f.querySelector(".err").textContent = ""; });
+  const campos = (err.data && err.data.campos) || {};
+  Object.entries(campos).forEach(([k, v]) => {
+    const f = $("m-cuerpo").querySelector(`.field[data-campo="${k}"]`);
+    if (f) { f.classList.add("error"); f.querySelector(".err").textContent = v; }
+  });
+  const box = $("m-cuerpo").querySelector(".form-error");
+  if (box) { box.textContent = err.message + (campos._esquema ? " " + campos._esquema : ""); box.classList.add("visible"); }
+  else toast(err.message, true);
+}
+async function guardar(url, metodo, alTerminar) {
+  try { await api(url, { method: metodo, body: JSON.stringify(leerForm()) }); cerrarModal(); toast("Guardado ✓"); cargar(); conteos(); if (alTerminar) alTerminar(); }
+  catch (e) { mostrarErrores(e); }
+}
+async function eliminar(url, pregunta) {
+  if (!confirm(pregunta)) return;
+  try { await api(url, { method: "DELETE" }); cerrarModal(); toast("Eliminado ✓"); cargar(); conteos(); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ---------- pestañas y tabla ----------
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
+  estado.tab = b.dataset.tab; estado.pagina = 1; estado.filtros = {}; pintarToolbar(); cargar();
+});
+
+function pintarToolbar() {
+  const t = estado.tab;
+  const PISTAS = { vehiculos: "Buscar por nombre o marca…", clientes: "Buscar por nombre, documento, correo o ciudad…", ordenes: "Buscar por número, cliente o ciudad…" };
+  let html = `<input type="search" id="q" placeholder="${PISTAS[t]}" value="${esc(estado.filtros.q || "")}">`;
+  if (t === "vehiculos") {
+    html += `<select data-f="marca"><option value="">Todas las marcas</option>${estado.marcas.map(m => `<option>${esc(m)}</option>`).join("")}</select>
+      <select data-f="condition"><option value="">Nuevo y usado</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select>
+      <select data-f="estado"><option value="">Todos los estados</option><option value="disponible">Disponible</option><option value="vendido">Vendido</option></select>
+      <select data-f="source"><option value="">Todas las fuentes</option><option value="autocosmos">Autocosmos</option><option value="carroya">CarroYa</option><option value="manual">Manual</option></select>
+      <select data-f="orden"><option value="">Más recientes</option><option value="precio_asc">Menor precio</option><option value="precio_desc">Mayor precio</option></select>`;
+  }
+  if (t === "ordenes") html += `<select data-f="estado"><option value="">Todos los estados</option><option value="pagada">Pagada</option><option value="cancelada">Cancelada</option></select>`;
+  html += `<span class="spacer"></span>`;
+  if (t === "vehiculos") html += `<button class="btn primary" onclick="formVehiculo()">+ NUEVO VEHÍCULO</button>`;
+  if (t === "clientes") html += `<button class="btn primary" onclick="formCliente()">+ NUEVO CLIENTE</button>`;
+  $("toolbar").innerHTML = html;
+  let timer;
+  $("q").addEventListener("input", e => { clearTimeout(timer); timer = setTimeout(() => { estado.filtros.q = e.target.value; estado.pagina = 1; cargar(); }, 300); });
+  $("toolbar").querySelectorAll("select[data-f]").forEach(s => {
+    s.value = estado.filtros[s.dataset.f] || "";
+    s.onchange = () => { estado.filtros[s.dataset.f] = s.value; estado.pagina = 1; cargar(); };
+  });
+}
+
+async function cargar() {
+  const params = new URLSearchParams({ pagina: estado.pagina, ...Object.fromEntries(Object.entries(estado.filtros).filter(([, v]) => v)) });
+  try {
+    const d = await api(`/api/admin/${estado.tab}?${params}`);
+    if (d.marcas && !estado.marcas.length) { estado.marcas = d.marcas; pintarToolbar(); }
+    $("tabla").innerHTML = d.items.length ? ({ vehiculos: tablaVehiculos, clientes: tablaClientes, ordenes: tablaOrdenes }[estado.tab])(d.items)
+                                          : `<div class="vacio">No hay registros con esos filtros.</div>`;
+    $("paginacion").innerHTML = `${d.total.toLocaleString("es-CO")} registros · página ${d.pagina} de ${d.paginas}
+      <button class="btn sm" ${d.pagina <= 1 ? "disabled" : ""} onclick="irA(${d.pagina - 1})">← Anterior</button>
+      <button class="btn sm" ${d.pagina >= d.paginas ? "disabled" : ""} onclick="irA(${d.pagina + 1})">Siguiente →</button>`;
+  } catch (e) { $("tabla").innerHTML = `<div class="vacio">${esc(e.message)}</div>`; }
+}
+function irA(p) { estado.pagina = p; cargar(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+
+// ================= VEHÍCULOS =================
+function tablaVehiculos(items) {
+  return `<table><thead><tr><th></th><th>Vehículo</th><th>Marca</th><th>Estado</th><th>Año</th><th>Km</th><th>Etiquetas</th><th class="num">Precio</th><th></th></tr></thead><tbody>
+  ${items.map(v => `<tr>
+    <td>${v.image ? `<img class="thumb" src="${esc(v.image)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.visibility='hidden'">` : ""}</td>
+    <td><strong>${esc(v.title)}</strong><br><span style="font-size:12px;color:var(--muted)">${v.condition === "nuevo" ? "Nuevo" : "Usado"} · ${esc(v.source)}</span></td>
+    <td>${esc(v.marca)}</td>
+    <td><span class="pill ${v.estado === "vendido" ? "no" : "ok"}">${esc(v.estado)}</span></td>
+    <td>${esc(v.year)}</td><td>${esc(v.mileage || "")}</td>
+    <td>${(v.etiquetas || []).map(e => `<span class="chip solo">${esc(e)}</span>`).join("")}</td>
+    <td class="num"><strong>${cop(v.price)}</strong></td>
+    <td><div class="acciones"><button class="btn sm" onclick="verVehiculo('${v._id}')">Ver</button>
+      <button class="btn sm" onclick="editarVehiculo('${v._id}')">Editar</button>
+      <button class="btn sm danger" onclick="eliminar('/api/admin/vehiculos/${v._id}','¿Eliminar este vehículo?')">Eliminar</button></div></td>
+  </tr>`).join("")}</tbody></table>`;
+}
+function formVehiculo(v = null) {
+  const e = v || { condition: "usado" };
+  abrirModal(v ? "Editar vehículo" : "Nuevo vehículo", `<div class="form-error"></div><div class="grid2">
+    ${campo("title", "Nombre del vehículo *", e.title, "text", "full")}
+    ${campo("marca", "Marca *", e.marca)}
+    ${campo("price", "Precio (COP) *", e.price, "number")}
+    ${selector("condition", "Condición *", [["usado", "Usado"], ["nuevo", "Nuevo"]], e.condition)}
+    ${campo("year", "Año", e.year === "N/A" ? "" : e.year, "number")}
+    ${campo("mileage_km", "Kilometraje", e.mileage_km ?? "", "number")}
+    ${campo("location", "Ciudad", e.location)}
+    ${campo("image", "URL de la foto", e.image, "url", "full")}
+    ${campo("url", "Enlace del anuncio", e.url && e.url.startsWith("http") ? e.url : "", "url", "full")}
+  </div>`, `<button class="btn" onclick="cerrarModal()">Cancelar</button>
+    <button class="btn primary" onclick="guardar('/api/admin/vehiculos${v ? "/" + v._id : ""}','${v ? "PUT" : "POST"}')">GUARDAR</button>`);
+}
+async function editarVehiculo(id) { try { formVehiculo(await api(`/api/admin/vehiculos/${id}`)); } catch (e) { toast(e.message, true); } }
+async function verVehiculo(id) {
+  try {
+    const v = await api(`/api/admin/vehiculos/${id}`);
+    abrirModal(v.title, `
+      ${v.image ? `<img class="detalle-img" src="${esc(v.image)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+      <dl class="datos">
+        <dt>Marca</dt><dd>${esc(v.marca)}</dd><dt>Precio</dt><dd>${cop(v.price)}</dd>
+        <dt>Condición / estado</dt><dd>${v.condition === "nuevo" ? "Nuevo" : "Usado"} · <span class="pill ${v.estado === "vendido" ? "no" : "ok"}">${esc(v.estado)}</span></dd>
+        <dt>Año / km</dt><dd>${esc(v.year)} · ${esc(v.mileage || "")}</dd><dt>Ciudad</dt><dd>${esc(v.location || "")}</dd>
+        <dt>Fuente</dt><dd>${esc(v.source)} ${v.url && v.url.startsWith("http") ? `· <a href="${esc(v.url)}" target="_blank" style="color:var(--accent)">ver anuncio original</a>` : ""}</dd>
+        <dt>_id</dt><dd><code>${v._id}</code></dd>
+      </dl>
+      <div class="seccion"><h3>Etiquetas</h3><div class="nota">Campo array: agregar usa <code>$push</code> y quitar usa <code>$pull</code>.</div>
+        <div id="chips">${(v.etiquetas || []).map(e => `<span class="chip">${esc(e)}<button title="Quitar ($pull)" onclick="quitarEtiqueta('${v._id}', '${esc(e)}')">✕</button></span>`).join("") || `<span style="color:var(--muted);font-size:13px">Sin etiquetas</span>`}</div>
+        <div class="fila-add"><input id="nueva-etiqueta" placeholder="Ej: único dueño, 4x4, blindado" maxlength="30"
+          onkeydown="if(event.key==='Enter')agregarEtiqueta('${v._id}')"><button class="btn" onclick="agregarEtiqueta('${v._id}')">+ Agregar</button></div>
+      </div>
+      <div class="seccion"><h3>Órdenes donde aparece</h3><div class="nota">Obtenidas con <code>$lookup</code> desde ordenes por <code>items.vehiculo_id</code>.</div>
+        ${v.ordenes.length ? v.ordenes.map(o => `<div style="font-size:14px;padding:4px 0">${esc(o.numero_orden)} · ${esc(o.fecha)} · ${esc(o.cliente && o.cliente.nombre)} · <span class="pill ${o.estado === "pagada" ? "ok" : "neutral"}">${esc(o.estado)}</span></div>`).join("") : `<span style="color:var(--muted);font-size:13px">Ninguna</span>`}
+      </div>`,
+      `<button class="btn danger" onclick="eliminar('/api/admin/vehiculos/${v._id}','¿Eliminar este vehículo?')">Eliminar</button>
+       <span class="spacer"></span><button class="btn" onclick="editarVehiculo('${v._id}')">Editar</button>`);
+  } catch (e) { toast(e.message, true); }
+}
+async function agregarEtiqueta(id) {
+  const val = $("nueva-etiqueta").value.trim(); if (!val) return;
+  try { await api(`/api/admin/vehiculos/${id}/etiquetas`, { method: "POST", body: JSON.stringify({ etiqueta: val }) }); toast("Etiqueta agregada ($push) ✓"); verVehiculo(id); cargar(); }
+  catch (e) { toast(e.message, true); }
+}
+async function quitarEtiqueta(id, etiqueta) {
+  try { await api(`/api/admin/vehiculos/${id}/etiquetas/${encodeURIComponent(etiqueta)}`, { method: "DELETE" }); toast("Etiqueta quitada ($pull) ✓"); verVehiculo(id); cargar(); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ================= CLIENTES =================
+function tablaClientes(items) {
+  return `<table><thead><tr><th>Cliente</th><th>Documento</th><th>Contacto</th><th>Ciudad</th><th>Registro</th><th class="num">Órdenes</th><th class="num">Total comprado</th><th></th></tr></thead><tbody>
+  ${items.map(c => `<tr>
+    <td><strong>${esc(c.nombre)}</strong></td><td>${esc(c.documento)}</td>
+    <td>${esc(c.email)}<br><span style="font-size:12px;color:var(--muted)">${esc(c.telefono)}</span></td>
+    <td>${esc(c.direccion && c.direccion.ciudad)}</td><td>${esc(c.fecha_registro)}</td>
+    <td class="num">${c.num_ordenes}</td><td class="num"><strong>${cop(c.total_comprado)}</strong></td>
+    <td><div class="acciones"><button class="btn sm" onclick="verCliente('${c._id}')">Ver</button>
+      <button class="btn sm" onclick="editarCliente('${c._id}')">Editar</button>
+      <button class="btn sm danger" onclick="eliminar('/api/admin/clientes/${c._id}','¿Eliminar este cliente?')">Eliminar</button></div></td>
+  </tr>`).join("")}</tbody></table>`;
+}
+function formCliente(c = null) {
+  const e = c || { direccion: {} }; const d = e.direccion || {};
+  abrirModal(c ? "Editar cliente" : "Nuevo cliente", `<div class="form-error"></div><div class="grid2">
+    ${campo("nombre", "Nombre completo *", e.nombre, "text", "full")}
+    ${campo("documento", "Cédula / NIT *", e.documento)}
+    ${campo("telefono", "Celular *", e.telefono)}
+    ${campo("email", "Correo *", e.email, "email", "full")}
+    <div class="grupo full"><div class="grupo-t">Dirección (documento embebido)</div><div class="grid2">
+      ${campo("direccion", "Dirección *", d.direccion, "text", "full")}
+      ${campo("ciudad", "Ciudad *", d.ciudad)}${campo("departamento", "Departamento", d.departamento)}
+    </div></div></div>`,
+    `<button class="btn" onclick="cerrarModal()">Cancelar</button>
+     <button class="btn primary" onclick="guardar('/api/admin/clientes${c ? "/" + c._id : ""}','${c ? "PUT" : "POST"}')">GUARDAR</button>`);
+}
+async function editarCliente(id) { try { formCliente(await api(`/api/admin/clientes/${id}`)); } catch (e) { toast(e.message, true); } }
+async function verCliente(id) {
+  try {
+    const c = await api(`/api/admin/clientes/${id}`); const d = c.direccion || {};
+    abrirModal(c.nombre, `<dl class="datos">
+        <dt>Documento</dt><dd>${esc(c.documento)}</dd><dt>Correo</dt><dd>${esc(c.email)}</dd><dt>Celular</dt><dd>${esc(c.telefono)}</dd>
+        <dt>Dirección</dt><dd>${esc(d.direccion)}, ${esc(d.ciudad)} ${d.departamento ? "(" + esc(d.departamento) + ")" : ""}</dd>
+        <dt>Registro</dt><dd>${esc(c.fecha_registro)}</dd><dt>_id</dt><dd><code>${c._id}</code></dd></dl>
+      <div class="seccion"><h3>Órdenes (${c.ordenes.length})</h3><div class="nota">Con <code>$lookup</code> desde ordenes por <code>cliente_id</code> (campo indexado).</div>
+        ${c.ordenes.length ? `<table><tbody>${c.ordenes.map(o => `<tr><td><strong>${esc(o.numero_orden)}</strong></td><td>${esc(o.fecha)}</td><td>${o.cantidad} veh.</td>
+          <td><span class="pill ${o.estado === "pagada" ? "ok" : "neutral"}">${esc(o.estado)}</span></td><td class="num">${cop(o.total)}</td></tr>`).join("")}</tbody></table>` : `<span style="color:var(--muted);font-size:13px">Sin órdenes</span>`}
+      </div>`,
+      `<button class="btn danger" onclick="eliminar('/api/admin/clientes/${c._id}','¿Eliminar este cliente?')">Eliminar</button>
+       <span class="spacer"></span><button class="btn" onclick="editarCliente('${c._id}')">Editar</button>`);
+  } catch (e) { toast(e.message, true); }
+}
+
+// ================= ÓRDENES =================
+function tablaOrdenes(items) {
+  return `<table><thead><tr><th>Orden</th><th>Fecha</th><th>Cliente</th><th>Entrega</th><th>Vehículos</th><th>Estado</th><th class="num">Total</th><th></th></tr></thead><tbody>
+  ${items.map(o => `<tr>
+    <td><strong>${esc(o.numero_orden)}</strong></td><td>${esc(o.fecha)}</td><td>${esc(o.cliente && o.cliente.nombre)}</td>
+    <td>${esc(o.direccion_entrega && o.direccion_entrega.ciudad)}</td>
+    <td style="max-width:280px">${o.items.map(i => esc(i.title)).join("<br>")}</td>
+    <td><span class="pill ${o.estado === "pagada" ? "ok" : "neutral"}">${esc(o.estado)}</span></td>
+    <td class="num"><strong>${cop(o.total)}</strong></td>
+    <td><div class="acciones"><button class="btn sm" onclick="verOrden('${o._id}')">Ver / editar</button>
+      <button class="btn sm danger" onclick="eliminar('/api/admin/ordenes/${o._id}','¿Eliminar esta orden? Sus vehículos volverán a estar disponibles.')">Eliminar</button></div></td>
+  </tr>`).join("")}</tbody></table>`;
+}
+async function verOrden(id) {
+  try {
+    const o = await api(`/api/admin/ordenes/${id}`); const d = o.direccion_entrega || {}; const c = o.cliente_actual || {};
+    abrirModal(`Orden ${o.numero_orden}`, `<div class="form-error"></div><dl class="datos">
+        <dt>Fecha</dt><dd>${esc(o.fecha)}</dd>
+        <dt>Cliente</dt><dd>${esc(c.nombre || (o.cliente && o.cliente.nombre))} · ${esc(c.documento || "")} <span style="color:var(--muted);font-size:12px">(desde clientes por $lookup)</span></dd>
+        <dt>Pago</dt><dd>${esc(o.metodo_pago)} · ref. ${esc(o.referencia_pago)}</dd>
+        <dt>Total</dt><dd><strong>${cop(o.total)}</strong> (${o.cantidad} vehículo/s)</dd></dl>
+      <div class="seccion"><h3>Estado</h3>${selector("estado", "Estado de la orden", [["pagada", "Pagada"], ["cancelada", "Cancelada (libera los vehículos)"]], o.estado)}</div>
+      <div class="seccion"><div class="grupo"><div class="grupo-t">Dirección de entrega (documento embebido)</div><div class="grid2">
+        ${campo("direccion", "Dirección", d.direccion, "text", "full")}${campo("ciudad", "Ciudad", d.ciudad)}${campo("departamento", "Departamento", d.departamento)}
+      </div></div></div>
+      <div class="seccion"><h3>Vehículos</h3><div class="nota">Quitar un vehículo usa <code>$pull</code> sobre el array items y <code>$inc</code> sobre el total.</div>
+        <table><tbody>${o.items.map(i => `<tr><td>${esc(i.title)}</td><td class="num">${cop(i.price)}</td>
+          <td><div class="acciones"><button class="btn sm danger" onclick="quitarItem('${o._id}','${i.vehiculo_id}')">Quitar</button></div></td></tr>`).join("")}</tbody></table>
+      </div>`,
+      `<button class="btn danger" onclick="eliminar('/api/admin/ordenes/${o._id}','¿Eliminar esta orden? Sus vehículos volverán a estar disponibles.')">Eliminar orden</button>
+       <span class="spacer"></span><button class="btn" onclick="cerrarModal()">Cerrar</button>
+       <button class="btn primary" onclick="guardar('/api/admin/ordenes/${o._id}','PUT')">GUARDAR CAMBIOS</button>`);
+  } catch (e) { toast(e.message, true); }
+}
+async function quitarItem(oid, vid) {
+  if (!confirm("¿Quitar este vehículo de la orden? Volverá a estar disponible.")) return;
+  try { await api(`/api/admin/ordenes/${oid}/items/${vid}`, { method: "DELETE" }); toast("Vehículo quitado ($pull) ✓"); verOrden(oid); cargar(); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ---------- inicio ----------
+// Las pestañas muestran el total de cada colección (sin filtros); el total filtrado va en la paginación
+function conteos() {
+  ["vehiculos", "clientes", "ordenes"].forEach(t => api(`/api/admin/${t}`).then(d => $(`n-${t}`).textContent = d.total.toLocaleString("es-CO")).catch(() => {}));
+}
+pintarToolbar(); cargar(); conteos();
+</script>
+</body>
+</html>

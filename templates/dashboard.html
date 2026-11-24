@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de ventas — Auto Smart</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #12151a;
+    --surface2: #1a1e26;
+    --border: #232830;
+    --accent: #e8ff47;
+    --red: #ff4747;
+    --text: #f0f2f5;
+    --text2: #b8bec8;
+    --muted: #6b7280;
+    --tucarro: #e8ff47;
+    --autocosmos: #ff3366;
+    --good: #2fd27a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+  header {
+    padding: 24px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(10,12,15,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; text-decoration: none; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .logo-badge { font-size: 10px; font-weight: 600; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 20px; margin-left: 10px; vertical-align: middle; letter-spacing: 1px; }
+  .nav { display: flex; gap: 24px; align-items: center; }
+  .nav a { color: var(--muted); text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+  .nav a:hover, .nav a.active { color: var(--accent); }
+
+  main { padding: 32px 40px 60px; max-width: 1400px; margin: 0 auto; }
+  .page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+  .page-head h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 800; line-height: 1; }
+  .page-head p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .refresh { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 8px 14px; border-radius: 8px; font-family: 'Barlow', sans-serif; font-size: 13px; cursor: pointer; }
+  .refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .kpi .value { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; margin-top: 4px; line-height: 1.1; }
+  .kpi .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .kpi.hero { border-top: 4px solid var(--accent); }
+  .kpi.hero .value { color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; min-width: 0; }
+  .panel h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; }
+  .panel .hint { font-size: 12px; color: var(--muted); margin: 2px 0 14px; }
+  .panel.fill { display: flex; flex-direction: column; }
+  .panel.fill .chart-box { flex: 1; min-height: 280px; }
+  .chart-box { position: relative; height: 280px; }
+  .chart-box.short { height: 180px; }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td strong { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .pill.ok { background: rgba(47,210,122,0.12); color: var(--good); }
+  .src { display: inline-flex; align-items: center; gap: 6px; }
+  .src::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--tucarro); }
+  .src.autocosmos::before { background: var(--autocosmos); }
+  .items-list { font-size: 12px; color: var(--muted); margin-top: 2px; max-width: 360px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty a { color: var(--accent); }
+  .error-box { display: none; background: rgba(255,71,71,0.08); border: 1px solid var(--red); color: var(--text); padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; }
+  .error-box.visible { display: block; }
+
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    header { padding: 16px 20px; }
+    main { padding: 24px 20px 48px; }
+    .page-head h1 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">AUTO<span>SMART</span><span class="logo-badge">PRO</span></a>
+  <nav class="nav">
+    <a href="/">CATÁLOGO</a>
+    <a href="/dashboard" class="active">DASHBOARD</a>
+    <a href="/reportes">REPORTES</a>
+    <a href="/admin">ADMIN</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-head">
+    <div>
+      <h1>Dashboard de ventas</h1>
+      <p id="updatedAt">Cargando…</p>
+    </div>
+    <button class="refresh" onclick="loadDashboard()">↻ Actualizar</button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <section class="kpis">
+    <div class="kpi hero"><div class="label">Ingresos totales</div><div class="value" id="kIngresos">—</div><div class="sub" id="kIngresosSub">&nbsp;</div></div>
+    <div class="kpi"><div class="label">Órdenes</div><div class="value" id="kOrdenes">—</div><div class="sub">compras confirmadas</div></div>
+    <div class="kpi"><div class="label">Vehículos vendidos</div><div class="value" id="kVendidos">—</div><div class="sub" id="kVendidosSub">&nbsp;</div></div>
+    <div class="kpi"><div class="label">Ticket promedio</div><div class="value" id="kTicket">—</div><div class="sub">por orden</div></div>
+    <div class="kpi"><div class="label">Inventario disponible</div><div class="value" id="kInventario">—</div><div class="sub" id="kInventarioSub">&nbsp;</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel fill">
+      <h3>Ingresos por día</h3>
+      <div class="hint">Últimos 14 días · pasa el cursor sobre una barra para ver el detalle</div>
+      <div class="chart-box"><canvas id="chartDias" aria-label="Ingresos por día, últimos 14 días" role="img"></canvas></div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>Vendidos: nuevos vs usados</h3>
+        <div class="hint">Vehículos vendidos según su estado</div>
+        <div class="chart-box short"><canvas id="chartFuente" aria-label="Vehículos vendidos, nuevos contra usados" role="img"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Método de pago</h3>
+        <div class="hint">Órdenes por método</div>
+        <div class="chart-box short"><canvas id="chartMetodo" aria-label="Órdenes por método de pago" role="img"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-bottom:16px">
+    <h3>Últimas órdenes</h3>
+    <div class="hint">Las 10 compras más recientes</div>
+    <div class="table-wrap" id="ordersTable"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Inventario: nuevos vs usados</h3>
+    <div class="hint">Catálogo extraído de Autocosmos</div>
+    <div class="table-wrap" id="inventoryTable"></div>
+  </section>
+</main>
+
+<script>
+  const fmtCOP = n => "$ " + Number(n || 0).toLocaleString("es-CO");
+  const fmtShort = n => {
+    n = Number(n || 0);
+    if (n >= 1e9) return "$" + (n / 1e9).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + " mil M";
+    if (n >= 1e6) return "$" + (n / 1e6).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + "M";
+    return fmtCOP(n);
+  };
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const SOURCE_COLOR = { "Usados": css("--tucarro"), "Nuevos": css("--autocosmos") };
+
+  const charts = {};
+
+  if (window.Chart) {
+    Chart.defaults.font.family = "'Barlow', sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = css("--muted");
+    Chart.defaults.borderColor = css("--border");
+    Object.assign(Chart.defaults.plugins.tooltip, {
+      backgroundColor: css("--surface2"), borderColor: css("--border"), borderWidth: 1,
+      titleColor: css("--text"), bodyColor: css("--text2"), padding: 10, cornerRadius: 8,
+      displayColors: false,
+    });
+    Chart.defaults.plugins.legend.display = false;
+  }
+
+  function drawChart(id, config) {
+    if (!window.Chart) return;
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id), config);
+  }
+
+  const barBase = { borderRadius: 4, borderSkipped: "start", maxBarThickness: 36 };
+  const axisGrid = { color: "rgba(255,255,255,0.05)", drawTicks: false };
+
+  async function loadDashboard() {
+    try {
+      const resp = await fetch("/api/dashboard");
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      render(await resp.json());
+      document.getElementById("errorBox").classList.remove("visible");
+      document.getElementById("updatedAt").textContent =
+        "Actualizado " + new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) + " · se refresca cada 30 s";
+    } catch (e) {
+      const box = document.getElementById("errorBox");
+      box.textContent = "No se pudo cargar el dashboard (" + e.message + "). ¿Está corriendo Flask y MongoDB?";
+      box.classList.add("visible");
+    }
+  }
+
+  function render(d) {
+    const k = d.kpis;
+    document.getElementById("kIngresos").textContent = fmtShort(k.ingresos);
+    document.getElementById("kIngresosSub").textContent = fmtCOP(k.ingresos);
+    document.getElementById("kOrdenes").textContent = k.ordenes.toLocaleString("es-CO");
+    document.getElementById("kVendidos").textContent = k.vehiculos_vendidos.toLocaleString("es-CO");
+    document.getElementById("kVendidosSub").textContent = k.inventario_total
+      ? ((k.vehiculos_vendidos / k.inventario_total) * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + "% del inventario"
+      : " ";
+    document.getElementById("kTicket").textContent = fmtShort(k.ticket_promedio);
+    document.getElementById("kInventario").textContent = k.inventario_disponible.toLocaleString("es-CO");
+    document.getElementById("kInventarioSub").textContent = "de " + k.inventario_total.toLocaleString("es-CO") + " publicados";
+
+    // Ingresos por día
+    const dias = d.ventas_por_dia;
+    drawChart("chartDias", {
+      type: "bar",
+      data: {
+        labels: dias.map(x => x.fecha),
+        datasets: [{ ...barBase, data: dias.map(x => x.ingresos), backgroundColor: css("--accent"),
+                     hoverBackgroundColor: "#f4ff9a" }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: { grid: { display: false }, ticks: { padding: 6 } },
+          y: { beginAtZero: true, grid: axisGrid, border: { display: false },
+               ticks: { padding: 8, maxTicksLimit: 5, callback: v => fmtShort(v) } },
+        },
+        plugins: {
+          tooltip: { callbacks: {
+            title: items => "Día " + items[0].label,
+            label: item => {
+              const x = dias[item.dataIndex];
+              return [fmtCOP(x.ingresos), x.ordenes + (x.ordenes === 1 ? " orden" : " órdenes")];
+            },
+          } },
+        },
+      },
+    });
+
+    // Vendidos por fuente (color = identidad del portal, igual que en el catálogo)
+    const fuentes = d.ventas_por_fuente;
+    drawChart("chartFuente", {
+      type: "bar",
+      data: {
+        labels: fuentes.map(x => x.fuente),
+        datasets: [{ ...barBase, data: fuentes.map(x => x.vehiculos),
+                     backgroundColor: fuentes.map(x => SOURCE_COLOR[x.fuente] || css("--text2")) }],
+      },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { beginAtZero: true, grid: axisGrid, border: { display: false }, ticks: { precision: 0, maxTicksLimit: 5 } },
+          y: { grid: { display: false }, ticks: { color: css("--text2") } },
+        },
+        plugins: { tooltip: { callbacks: {
+          label: item => {
+            const x = fuentes[item.dataIndex];
+            return [x.vehiculos + (x.vehiculos === 1 ? " vehículo" : " vehículos"), fmtCOP(x.ingresos)];
+          },
+        } } },
+      },
+    });
+    toggleEmpty("chartFuente", !fuentes.length);
+
+    // Método de pago
+    const metodos = d.ventas_por_metodo;
+    drawChart("chartMetodo", {
+      type: "bar",
+      data: {
+        labels: metodos.map(x => x.metodo.replace(" (simulado)", "")),
+        datasets: [{ ...barBase, data: metodos.map(x => x.ordenes), backgroundColor: "#7aa7ff" }],
+      },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { beginAtZero: true, grid: axisGrid, border: { display: false }, ticks: { precision: 0, maxTicksLimit: 5 } },
+          y: { grid: { display: false }, ticks: { color: css("--text2") } },
+        },
+        plugins: { tooltip: { callbacks: { label: item => item.raw + (item.raw === 1 ? " orden" : " órdenes") } } },
+      },
+    });
+    toggleEmpty("chartMetodo", !metodos.length);
+
+    renderOrders(d.ultimas_ordenes);
+    renderInventory(d.inventario);
+  }
+
+  function toggleEmpty(canvasId, isEmpty) {
+    const box = document.getElementById(canvasId).parentElement;
+    let msg = box.querySelector(".empty");
+    if (isEmpty && !msg) {
+      msg = document.createElement("div");
+      msg.className = "empty";
+      msg.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0";
+      msg.textContent = "Sin ventas todavía";
+      box.appendChild(msg);
+    } else if (!isEmpty && msg) msg.remove();
+  }
+
+  function renderOrders(ordenes) {
+    const el = document.getElementById("ordersTable");
+    if (!ordenes.length) {
+      el.innerHTML = `<div class="empty">Aún no hay compras. <a href="/">Ve al catálogo</a> y haz la primera.</div>`;
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>Orden</th><th>Fecha</th><th>Cliente</th><th>Vehículos</th><th>Pago</th><th>Estado</th><th class="num">Total</th></tr></thead>
+      <tbody>${ordenes.map(o => `
+        <tr>
+          <td><strong>${esc(o.numero_orden)}</strong><div class="items-list">${esc(o.referencia_pago)}</div></td>
+          <td>${esc(o.fecha)}</td>
+          <td><strong>${esc(o.cliente.nombre)}</strong><div class="items-list">${esc(o.direccion_entrega && o.direccion_entrega.ciudad)} · ${esc(o.cliente.email)}</div></td>
+          <td>${o.cantidad}<div class="items-list" title="${esc(o.items.map(i => i.title).join(" · "))}">${esc(o.items.map(i => i.title).join(" · "))}</div></td>
+          <td>${esc((o.metodo_pago_texto || o.metodo_pago).replace(" (simulado)", ""))}</td>
+          <td><span class="pill ok">✓ ${esc(o.estado)}</span></td>
+          <td class="num"><strong>${fmtCOP(o.total)}</strong></td>
+        </tr>`).join("")}
+      </tbody></table>`;
+  }
+
+  function renderInventory(inv) {
+    const el = document.getElementById("inventoryTable");
+    if (!inv.length) {
+      el.innerHTML = `<div class="empty">No hay vehículos en la base de datos. Ejecuta el scraper.</div>`;
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>Estado</th><th class="num">Publicados</th><th class="num">Disponibles</th><th class="num">Vendidos</th><th class="num">Precio promedio</th></tr></thead>
+      <tbody>${inv.map(f => `
+        <tr>
+          <td><span class="src ${f.fuente === "Nuevos" ? "autocosmos" : ""}"><strong>${esc(f.fuente)}</strong></span></td>
+          <td class="num">${f.total.toLocaleString("es-CO")}</td>
+          <td class="num">${f.disponibles.toLocaleString("es-CO")}</td>
+          <td class="num">${f.vendidos.toLocaleString("es-CO")}</td>
+          <td class="num">${fmtCOP(f.precio_promedio)}</td>
+        </tr>`).join("")}
+      </tbody></table>`;
+  }
+
+  loadDashboard();
+  setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>
